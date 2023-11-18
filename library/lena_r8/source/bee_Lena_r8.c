@@ -359,6 +359,7 @@ uint8_t check_module_sim()
     {
         return MODULE_SIM_OK;
     }
+    ESP_LOGI(LENAR8_TAG, "Can't connect to internet");
     return MODULE_SIM_CANT_CONNECT_NET; 
 }
 
