@@ -39,8 +39,6 @@ static char message_response[BEE_LENGTH_MESSAGE_RESPONSE];
 static char message_publish_content_for_publish_mqtt_binary_rs485[BEE_LENGTH_AT_COMMAND_RS485];
 static char message_publish_content_for_publish_mqtt_binary_keep_alive[BEE_LENGTH_AT_COMMAND];
 
-#define LENAR8_TAG "LENA R8 Status"
-
 static void lena_vConfigure_credential()
 {
     char command_AT[BEE_LENGTH_AT_COMMAND] = {};
@@ -265,102 +263,100 @@ static void mqtt_vSubscribe_command_server_task()
 }
 #endif
 
-uint8_t check_module_sim()
+bool checkRegistration(char* response) 
 {
+    // Tìm vị trí của dấu phẩy thứ hai trong chuỗi
+    char* secondComma = strchr(response, ',');
+    if (secondComma != NULL) {
+        // Tìm vị trí của dấu phẩy tiếp theo
+        char* thirdComma = strchr(secondComma + 1, ',');
+
+        if (thirdComma != NULL) {
+            // Tạo một chuỗi con từ vị trí sau dấu phẩy thứ hai đến trước dấu phẩy thứ ba
+            char subString[250];
+            strncpy(subString, secondComma + 1, thirdComma - secondComma - 1);
+            subString[thirdComma - secondComma - 1] = '\0';
+
+            // Kiểm tra xem "1" hoặc "5" có xuất hiện trong chuỗi con hay không
+            if (strchr(subString, '1') != NULL || strchr(subString, '5') != NULL) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool reg = false;
+void check_module_sim()
+{
+    
     char command_AT[BEE_LENGTH_AT_COMMAND] = {};
 
     //// URCs initialization
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CMEE=2\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CREG=2\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CGREG=2\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CEREG=2\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CGEREP=2,1\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CSCON=1\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CFUN=1\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    vTaskDelay(pdMS_TO_TICKS(6000));
+    vTaskDelay(pdMS_TO_TICKS(5000));
 
     // Collect module status
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+UPSV?\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    uart_flush(EX_UART_NUM);
-    uart_read_bytes(EX_UART_NUM, message_response, 250, (TickType_t)300);
-    ESP_LOGI(LENAR8_TAG, "UPSV: %s\n",message_response);
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CPIN?\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    uart_flush(EX_UART_NUM);
-    uart_read_bytes(EX_UART_NUM, message_response, 250, (TickType_t)300);
-    ESP_LOGI(LENAR8_TAG, "CPIN: %s\n",message_response);
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CCLK?\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    uart_flush(EX_UART_NUM);
-    uart_read_bytes(EX_UART_NUM, message_response, 250, (TickType_t)300);
-    ESP_LOGI(LENAR8_TAG, "CCLK: %s\n",message_response);
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CGDCONT?\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    uart_flush(EX_UART_NUM);
-    uart_read_bytes(EX_UART_NUM, message_response, 250, (TickType_t)300);
-    ESP_LOGI(LENAR8_TAG, "CGDCONT: %s\n",message_response);
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     // Check registration
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CEREG?\r\n");
-    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
     uart_flush(EX_UART_NUM);
-    uart_read_bytes(EX_UART_NUM, message_response, 250, (TickType_t)500);
-    ESP_LOGI(LENAR8_TAG, "CEREG: %s\n",message_response);
-    vTaskDelay(pdMS_TO_TICKS(300));
+    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
+    uart_read_bytes(EX_UART_NUM, message_response, BEE_LENGTH_MESSAGE_RESPONSE, (TickType_t)300);
+    printf("CEREG: %s\n", message_response);
+    if (checkRegistration(message_response)==true)
+    {
+        reg = true;
+    }
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CGREG?\r\n");
-    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
     uart_flush(EX_UART_NUM);
-    uart_read_bytes(EX_UART_NUM, message_response, 250, (TickType_t)500);
-    ESP_LOGI(LENAR8_TAG, "CGREG: %s\n",message_response);
-    vTaskDelay(pdMS_TO_TICKS(300));
+    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
+    uart_read_bytes(EX_UART_NUM, message_response, BEE_LENGTH_MESSAGE_RESPONSE, (TickType_t)300);
+    printf("CGREG: %s\n", message_response);
+    if (checkRegistration(message_response)==true)
+    {
+        reg = true;
+    }
 
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+COPS?\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    uart_flush(EX_UART_NUM);
-    uart_read_bytes(EX_UART_NUM, message_response, 250, (TickType_t)500);
-    ESP_LOGI(LENAR8_TAG, "COPS: %s\n",message_response);
-    vTaskDelay(pdMS_TO_TICKS(300));
-
+    
     // additional AT+CGACT command is necessary
-    vTaskDelay(pdMS_TO_TICKS(2000));
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CGACT=1\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    uart_flush(EX_UART_NUM);
-    uart_read_bytes(EX_UART_NUM, message_response, 250, (TickType_t)500);
-    if (strcmp(message_response, "OK") == 0)
-    {
-        return MODULE_SIM_OK;
-    }
-    ESP_LOGI(LENAR8_TAG, "Can't connect to internet");
-    return MODULE_SIM_CANT_CONNECT_NET; 
 }
 
 void mqtt_vLena_r8_start()
@@ -370,8 +366,8 @@ void mqtt_vLena_r8_start()
     snprintf(mac_address, sizeof(mac_address), "%02x%02x%02x%02x%02x%02x", u8Mac_address[0], u8Mac_address[1], u8Mac_address[2], u8Mac_address[3], u8Mac_address[4], u8Mac_address[5]);
     snprintf(BEE_TOPIC_PUBLISH, sizeof(BEE_TOPIC_PUBLISH), "\"VB/DMP/VBEEON/BEE/SMH/%s/telemetry\"", mac_address);
     snprintf(BEE_TOPIC_SUBSCRIBE, sizeof(BEE_TOPIC_SUBSCRIBE), "\"VB/DMP/VBEEON/BEE/SMH/%s/command\"", mac_address);
-
-    if (check_module_sim() == MODULE_SIM_OK)
+    check_module_sim();
+    if (reg == true)
     {
         // config credential and connect broker
         lena_vConfigure_credential();
