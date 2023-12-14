@@ -12,7 +12,7 @@
 #define UART_RX GPIO_NUM_10
 
 #define EX_UART_NUM UART_NUM_1
-#define BUF_SIZE 256
+#define BUF_SIZE 1024
 
 void uart_vCreate();
 

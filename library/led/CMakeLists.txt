@@ -1,7 +1,7 @@
-set(component_srcs "source/bee_cJSON.c")
+set(component_srcs "source/bee_Led.c")
 
 idf_component_register(SRCS "${component_srcs}"
                        INCLUDE_DIRS "include"
                        PRIV_INCLUDE_DIRS ""
-                       PRIV_REQUIRES ""
+                       PRIV_REQUIRES "driver"
                        REQUIRES "")

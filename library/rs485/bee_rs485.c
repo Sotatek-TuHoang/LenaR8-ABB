@@ -18,8 +18,8 @@
 #include "esp_log.h"
 #include "sdkconfig.h"
 #include "esp_mac.h"
+#include "cJSON.h"
 
-#include "bee_cJSON.h"
 #include "bee_rs485.h"
 
 #define TAG "RS485"
@@ -230,6 +230,10 @@ void rs485_init()
 
 void TX(const int port, const char *str, uint8_t length)
 {
+    // printf("strlen: %d, str_tx:", strlen(str));
+    //  for (uint8_t i = 0; i < 8; i++)
+    //      printf("%02x", str[i]);
+    //  printf("\n");
     if (uart_write_bytes(port, str, length) != length)
     {
         ESP_LOGE(TAG, "Send data critical failure.");
@@ -254,25 +258,13 @@ void RX_task(void *pvParameters)
                 if ((dtmp[1] == 0x03) && (dtmp[2] == 0x88))
                 {
                     check_data_flag = 1;
-                    // printf("str RX: ");
-                    //  for (int i = 0; i < len; i++)
-                    //  {
-                    //      printf("%02X ", dtmp[i]);
-                    //  }
-                    //  printf("\n");
-                    //  ESP_LOGI(TAG, "Byte count: %d", dtmp[2]);
+                    // ESP_LOGI(TAG, "Byte count: %d", dtmp[2]);
                     read_data_holding_reg_ThreePhase_PowerFactors(dtmp);
                 }
                 else if ((dtmp[1] == 0x03) && (dtmp[2] == 0x70))
                 {
                     check_data_flag = 1;
-                    // printf("str RX: ");
-                    // for (int i = 0; i < len; i++)
-                    // {
-                    //     printf("%02X ", dtmp[i]);
-                    // }
-                    // printf("\n");
-                    ESP_LOGI(TAG, "Byte count: %d", dtmp[2]);
+                    // ESP_LOGI(TAG, "Byte count: %d", dtmp[2]);
                     read_data_holding_reg_ActiveEnergy_CO2(dtmp);
                 }
                 uart_flush(UART_PORT_2);
@@ -389,6 +381,39 @@ char *pack_json_3pha_data(void)
     return json_str;
 }
 
+void reset_data(uint8_t slave_addr, const uint8_t *type_data)
+{
+    uint8_t tx_str[8];
+    tx_str[0] = slave_addr;
+    tx_str[1] = 0x06;
+    tx_str[2] = type_data[0];
+    tx_str[3] = type_data[1];
+    tx_str[4] = 0x00;
+    tx_str[5] = 0x01;
+
+    // Tính CRC của chuỗi tx_str.
+    uint16_t crc = MODBUS_CRC16(tx_str, 6);
+
+    // Thêm CRC vào chuỗi tx_str.
+    tx_str[6] = crc & 0xFF;        // Byte thấp của CRC
+    tx_str[7] = (crc >> 8) & 0xFF; // Byte cao của CRC
+
+    // Sao chép chuỗi tx_str vào một vùng nhớ mới.
+    char *new_tx_str = (char *)malloc(sizeof(tx_str) + 1);
+
+    if (new_tx_str == NULL)
+    {
+        // Xử lý lỗi nếu không thể cấp phát bộ nhớ.
+    }
+
+    memcpy(new_tx_str, tx_str, sizeof(tx_str));
+    new_tx_str[sizeof(tx_str)] = '\0'; // Đặt ký tự null ở cuối chuỗi.
+
+    TX(2, new_tx_str, 8);
+
+    free(new_tx_str);
+}
+
 static void TX_task(void *pvParameters)
 {
     char *str_tx_1 = read_holding_registers(0x01, 0x5000, 56);
@@ -398,19 +423,6 @@ static void TX_task(void *pvParameters)
     {
         if (str_tx_1 != NULL && str_tx_2 != NULL)
         {
-            // printf("str TX_1: ");
-            // for (int i = 0; i < 8; i++)
-            // {
-            //     printf("%02X ", (unsigned char)str_tx_1[i]);
-            // }
-            // printf("\n");
-
-            // printf("str TX_2: ");
-            // for (int j = 0; j < 8; j++)
-            // {
-            //     printf("%02X ", (unsigned char)str_tx_2[j]);
-            // }
-            // printf("\n");
 
             TX(2, str_tx_1, 8);
             vTaskDelay(pdMS_TO_TICKS(400)); // phải có delay giữa 2Tx để tránh bị dính chuỗi

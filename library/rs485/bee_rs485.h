@@ -43,6 +43,19 @@
 
 #define BEE_TIME_TRANSMIT_DATA_RS485 2000
 
+#define RESET_LOGS \
+    (uint8_t[]) { 0x8f, 0x57 }
+#define RESET_HISTORICAL_FUNCTIONALITY \
+    (uint8_t[]) { 0x8f, 0x58 }
+#define RESET_TIMER \
+    (uint8_t[]) { 0x8f, 0x59 }
+#define RESET_ENERGY \
+    (uint8_t[]) { 0x8f, 0x5a }
+#define RESET_FACTORY \
+    (uint8_t[]) { 0x8f, 0x5b }
+#define RESET_MAX_MIN_AVR \
+    (uint8_t[]) { 0x8f, 0x5c }
+
 typedef struct
 {
     uint32_t voltage3pha;
@@ -153,6 +166,20 @@ char *read_holding_registers(uint8_t slave_addr, uint16_t reg_addr, uint16_t num
  *         Returns NULL if memory allocation fails.
  */
 char *pack_json_3pha_data(void);
+
+/**
+ * @brief Clears energy data for a specified slave device.
+ *
+ * This function constructs a Modbus RTU message to clear energy data for a slave device.
+ * The message includes the slave address, function code, and additional data.
+ * The CRC16 checksum is calculated and appended to the message.
+ * The resulting message is then copied to a new memory location, and a null terminator is added.
+ *
+ * @param slave_addr The Modbus RTU address of the slave device.
+ * @param type_data The Modbus RTU type data to reset.
+ */
+void reset_data(uint8_t slave_addr, const uint8_t *type_data);
+
 void rs485_start(void);
 
 #endif
