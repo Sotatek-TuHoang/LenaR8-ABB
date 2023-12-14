@@ -38,13 +38,17 @@ void led_rgb_red()
 
 void led_rgb_green()
 {
-    
-}
+    led_vSetLevel(LED_RED, LOW_LEVEL);
+    led_vSetLevel(LED_GREEN, HIGH_LEVEL);
+    led_vSetLevel(LED_BLUE, LOW_LEVEL);
+}    
 
 void led_rgb_blue()
 {
-    
-}
+    led_vSetLevel(LED_RED, LOW_LEVEL);
+    led_vSetLevel(LED_GREEN, LOW_LEVEL);
+    led_vSetLevel(LED_BLUE, HIGH_LEVEL);
+} 
 
 void led_rgb_off()
 {

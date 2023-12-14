@@ -22,7 +22,6 @@
 #include "bee_Lena_r8.h"
 #include "bee_ota.h"
 
-
 QueueHandle_t queue_message_response; // queue for task subscribe
 TaskHandle_t mqtt_vPublish_task_handle = NULL;
 
@@ -47,7 +46,7 @@ static char message_response[BEE_LENGTH_MESSAGE_RESPONSE];
 static char message_publish_content_for_publish_mqtt_binary_rs485[BEE_LENGTH_AT_COMMAND_RS485];
 static char message_publish_content_for_publish_mqtt_binary_keep_alive[BEE_LENGTH_AT_COMMAND];
 
-char *vRandomMqttClientId(void)
+static char *vRandomMqttClientId(void)
 {
     char *str_rd = (char *)malloc(13 * sizeof(char));
     char *str_return = (char *)malloc(28 * sizeof(char));
@@ -135,6 +134,7 @@ static void lena_vConnect_mqtt_broker()
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
     vTaskDelay(pdMS_TO_TICKS(2000));
 }
+
 static void mqtt_vCheck_error()
 {
     char *find_error;
@@ -154,7 +154,6 @@ static void mqtt_vCheck_error()
 
 static void lena_vPublish_data_rs485()
 {
-
     // Create AT command to publish json message rs485
     char *message_json_rs485 = (char *)calloc(BEE_LENGTH_AT_COMMAND_RS485, sizeof(char));
     message_json_rs485 = pack_json_3pha_data();
@@ -243,7 +242,6 @@ bool checkRegistration(char *response)
     {
         // Tìm vị trí của dấu phẩy tiếp theo
         char *thirdComma = strchr(secondComma + 1, ',');
-
         if (thirdComma != NULL)
         {
             // Tạo một chuỗi con từ vị trí sau dấu phẩy thứ hai đến trước dấu phẩy thứ ba
@@ -280,17 +278,7 @@ void check_module_sim()
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CFUN=1\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
     vTaskDelay(pdMS_TO_TICKS(5000));
-    // Collect module status
-    snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+UPSV?\r\n");
-    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CPIN?\r\n");
-    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CCLK?\r\n");
-    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
-    snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CGDCONT?\r\n");
-    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
     // Check registration
-    vTaskDelay(pdMS_TO_TICKS(2000));
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CEREG?\r\n");
     uart_flush_input(EX_UART_NUM);
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
