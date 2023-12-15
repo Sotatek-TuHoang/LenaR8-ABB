@@ -46,7 +46,7 @@ static char message_response[BEE_LENGTH_MESSAGE_RESPONSE];
 static char message_publish_content_for_publish_mqtt_binary_rs485[BEE_LENGTH_AT_COMMAND_RS485];
 static char message_publish_content_for_publish_mqtt_binary_keep_alive[BEE_LENGTH_AT_COMMAND];
 
-static char *vRandomMqttClientId(void)
+static char *cRandomMqttClientId(void)
 {
     char *str_rd = (char *)malloc(13 * sizeof(char));
     char *str_return = (char *)malloc(28 * sizeof(char));
@@ -67,7 +67,7 @@ static void lena_vConfigure_credential()
 {
     char command_AT[BEE_LENGTH_AT_COMMAND] = {};
 
-    char *MQTT_client = vRandomMqttClientId();
+    char *MQTT_client = cRandomMqttClientId();
     // config client Id
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+UMQTT=0,%s\r\n", MQTT_client);
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
@@ -200,41 +200,7 @@ static void lena_vPublish_keep_alive()
     free(message_json_keep_alive);
 }
 
-static void lena_vPublish_ota_status()
-{
-    char ota_status_mess[BEE_LENGTH_AT_COMMAND_RS485];
-
-    // Create AT command to publish json message ota status
-    char *message_json_ota_status = (char *)calloc(BEE_LENGTH_AT_COMMAND_RS485, sizeof(char));
-
-    if (ota_status_flag == OTA_FAILED)
-    {
-        message_json_ota_status = pub_ota_status("Failed");
-    }
-    else if (ota_status_flag == OTA_SUCCEED)
-    {
-        message_json_ota_status = pub_ota_status("Succeed");
-    }
-    else if (ota_status_flag == LASTEST_VERSION)
-    {
-        message_json_ota_status = pub_ota_status("Latest version");
-    }
-    else if (ota_status_flag == CONNECT_AP_FAIL)
-    {
-        message_json_ota_status = pub_ota_status("CONNECT AP FAIL");
-    }
-    
-    snprintf(message_publish, BEE_LENGTH_AT_COMMAND, "AT+UMQTTC=9,0,0,%s,%d\r\n", BEE_TOPIC_PUBLISH, strlen(message_json_ota_status) + 1);
-    snprintf(ota_status_mess, BEE_LENGTH_AT_COMMAND_RS485, "%s\r\n", message_json_ota_status);
-
-    // Send AT command
-    uart_write_bytes(EX_UART_NUM, message_publish, strlen(message_publish));
-    // Send content to publish
-    uart_write_bytes(EX_UART_NUM, ota_status_mess, strlen(ota_status_mess) + 1);
-    free(message_json_ota_status);
-}
-
-bool checkRegistration(char *response)
+static bool checkRegistration(char *response)
 {
     // Tìm vị trí của dấu phẩy thứ hai trong chuỗi
     char *secondComma = strchr(response, ',');
@@ -259,7 +225,7 @@ bool checkRegistration(char *response)
     return false;
 }
 
-void check_module_sim()
+static void check_module_sim()
 {
     char command_AT[BEE_LENGTH_AT_COMMAND] = {};
     //// URCs initialization
@@ -442,7 +408,6 @@ static void mqtt_vParse_json(char *mqtt_str)
             }
             else
             {
-                printf("lastest ver\n");
                 ota_status_flag = LASTEST_VERSION;
             }
             lena_vPublish_ota_status();
@@ -455,28 +420,29 @@ static void mqtt_vParse_json(char *mqtt_str)
 static void mqtt_vSubscribe_command_server_task()
 {
     uart_event_t uart_event;
-    char *dtmp = (char *)malloc(512);
+    char *dtmp = (char *)malloc(1024);
     char command_AT[BEE_LENGTH_AT_COMMAND] = {};
     snprintf(command_AT, 16, "AT+UMQTTC=6,1\r\n");
     for (;;)
     {
-        if (xQueueReceive(queue_message_response, (void *)&uart_event, (TickType_t)200))
+        if (xQueueReceive(queue_message_response, (void *)&uart_event, (TickType_t)50))
         {
-            bzero(dtmp, 512);
+            bzero(dtmp, 1024);
             switch (uart_event.type)
             {
                 case UART_DATA:
-                    printf("dtmp: %s\n", dtmp);
                     // Read message AT command from broker
-                    uart_read_bytes(EX_UART_NUM, dtmp, 512, (TickType_t)100);
+                    uart_read_bytes(EX_UART_NUM, dtmp, uart_event.size * 5, (TickType_t)50);
+                    ESP_LOGI(TAG,"dtmp: %s", dtmp);
+                    ESP_LOGI(TAG,"dtmp len: %d", strlen(dtmp));
 
                     if (strstr(dtmp, "+UUMQTTC: 6") != NULL)
                     {
                         uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
 
-                        if (xQueueReceive(queue_message_response, (void *)&uart_event, (TickType_t)200))
+                        if (xQueueReceive(queue_message_response, (void *)&uart_event, (TickType_t)50))
                         {
-                            uart_read_bytes(EX_UART_NUM, dtmp, 512, (TickType_t)100);
+                            uart_read_bytes(EX_UART_NUM, dtmp, uart_event.size * 5, (TickType_t)50);
                             // Filter message json
                             dtmp[strlen(dtmp) - 9] = '\0';
                             char *message_json_subscribe;
@@ -484,6 +450,10 @@ static void mqtt_vSubscribe_command_server_task()
                             // parse json
                             mqtt_vParse_json(message_json_subscribe);
                         }
+                    }
+                    else if (strlen(dtmp) == 0)
+                    {
+
                     }
                     else
                     {
@@ -511,7 +481,7 @@ static void mqtt_vSubscribe_command_server_task()
                     // Handle UART_DATA_BREAK case
                     break;
                 case UART_PATTERN_DET:
-                    // Handle UART_PATTERN_DET case
+                    // UART pattern detect interrupt
                     break;
                 case UART_EVENT_MAX:
                     // Handle UART_EVENT_MAX case
@@ -523,6 +493,40 @@ static void mqtt_vSubscribe_command_server_task()
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
+}
+
+void lena_vPublish_ota_status()
+{
+    char ota_status_mess[BEE_LENGTH_AT_COMMAND_RS485];
+
+    // Create AT command to publish json message ota status
+    char *message_json_ota_status = (char *)calloc(BEE_LENGTH_AT_COMMAND_RS485, sizeof(char));
+
+    if (ota_status_flag == OTA_FAILED)
+    {
+        message_json_ota_status = pub_ota_status("Failed");
+    }
+    else if (ota_status_flag == OTA_SUCCEED)
+    {
+        message_json_ota_status = pub_ota_status("Succeed");
+    }
+    else if (ota_status_flag == LASTEST_VERSION)
+    {
+        message_json_ota_status = pub_ota_status("Latest version");
+    }
+    else if (ota_status_flag == CONNECT_AP_FAIL)
+    {
+        message_json_ota_status = pub_ota_status("CONNECT AP FAIL");
+    }
+    
+    snprintf(message_publish, BEE_LENGTH_AT_COMMAND, "AT+UMQTTC=9,0,0,%s,%d\r\n", BEE_TOPIC_PUBLISH, strlen(message_json_ota_status) + 1);
+    snprintf(ota_status_mess, BEE_LENGTH_AT_COMMAND_RS485, "%s\r\n", message_json_ota_status);
+
+    // Send AT command
+    uart_write_bytes(EX_UART_NUM, message_publish, strlen(message_publish));
+    // Send content to publish
+    uart_write_bytes(EX_UART_NUM, ota_status_mess, strlen(ota_status_mess) + 1);
+    free(message_json_ota_status);
 }
 
 void mqtt_vLena_r8_start()
@@ -553,8 +557,8 @@ void mqtt_vLena_r8_start()
     lena_vConfigure_credential();
     lena_vConnect_mqtt_broker();
 
-    xTaskCreate(mqtt_vPublish_task, "mqtt_vPublish_task", 1024 * 3, NULL, 3, &mqtt_vPublish_task_handle);
-    xTaskCreate(mqtt_vSubscribe_command_server_task, "mqtt_vSubscribe_command_server_task", 1024 * 3, NULL, 4, NULL);
+    xTaskCreate(mqtt_vPublish_task, "mqtt_vPublish_task", 1024 * 6, NULL, 3, &mqtt_vPublish_task_handle);
+    xTaskCreate(mqtt_vSubscribe_command_server_task, "mqtt_vSubscribe_command_server_task", 1024 * 12, NULL, 4, NULL);
 }
 /****************************************************************************/
 /***        END OF FILE                                                   ***/

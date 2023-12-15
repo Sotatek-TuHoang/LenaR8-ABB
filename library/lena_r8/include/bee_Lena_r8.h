@@ -20,7 +20,7 @@
 #define BEE_QUEUE_LENGTH 30
 
 #define BEE_LENGTH_AT_COMMAND 400
-#define BEE_LENGTH_AT_COMMAND_RS485 900
+#define BEE_LENGTH_AT_COMMAND_RS485 2048
 #define BEE_LENGTH_MESSAGE_RESPONSE 400
 
 #define TICK_TIME_TO_SUBSCRIBE_FULL_MESSAGE 50
@@ -30,6 +30,8 @@
 #define MODULE_SIM_CANT_CONNECT_NET 1
 
 void mqtt_vLena_r8_start();
+
+void lena_vPublish_ota_status();
 
 #endif
 

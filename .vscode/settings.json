@@ -1,6 +1,6 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
-  "idf.portWin": "COM18",
+  "idf.portWin": "COM13",
   "idf.flashType": "UART",
   "idf.adapterTargetName": "esp32",
   "idf.openOcdConfigs": [
@@ -14,6 +14,32 @@
     "event_groups.h": "c",
     "string.h": "c",
     "cstdint": "c",
-    "bee_ota.h": "c"
+    "bee_ota.h": "c",
+    "array": "c",
+    "atomic": "c",
+    "bit": "c",
+    "*.tcc": "c",
+    "bitset": "c",
+    "chrono": "c",
+    "concepts": "c",
+    "deque": "c",
+    "list": "c",
+    "vector": "c",
+    "functional": "c",
+    "memory_resource": "c",
+    "optional": "c",
+    "string_view": "c",
+    "type_traits": "c",
+    "random": "c",
+    "format": "c",
+    "fstream": "c",
+    "istream": "c",
+    "span": "c",
+    "stdexcept": "c",
+    "system_error": "c",
+    "regex": "c",
+    "tuple": "c",
+    "variant": "c",
+    "cstring": "c"
   }
 }

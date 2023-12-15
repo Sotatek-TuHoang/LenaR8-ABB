@@ -31,6 +31,7 @@
 #include "esp_wifi.h"
 
 #include "bee_ota.h"
+#include "bee_Lena_r8.h"
 
 uint8_t ota_status_flag;
 
@@ -71,10 +72,10 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt) {
     return ESP_OK;
 }
 
+static uint8_t retry_num = 0;
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
-    uint8_t retry_num = 0;
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
     {
         esp_wifi_connect();
@@ -85,14 +86,14 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         {
             esp_wifi_connect();
             retry_num++;
-            ESP_LOGI(TAG, "retry to connect to the AP");
+            ESP_LOGI(TAG, "retry to connect to the AP: %d", retry_num);
         }
         else
         {
             xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
         }
         ESP_LOGI(TAG,"connect to the AP fail");
-        ota_status_flag = CONNECT_AP_FAIL;
+
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
@@ -209,6 +210,9 @@ void wifi_init_sta(const char* ssid, const char* pass)
     {
         ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
                  ssid, pass);
+        ota_status_flag = CONNECT_AP_FAIL;
+        lena_vPublish_ota_status();
+        esp_restart();
     }
     else
     {
