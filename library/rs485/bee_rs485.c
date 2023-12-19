@@ -60,7 +60,7 @@ static int16_t combine_2Bytes_signed(uint8_t highByte, uint8_t lowByte)
     return ((int16_t)highByte << 8) | lowByte;
 }
 
-static uint32_t combine_4Bytes_unsingned(uint8_t highByte1, uint8_t lowByte1, uint8_t highByte2, uint8_t lowByte2)
+static uint32_t combine_4Bytes_unsigned(uint8_t highByte1, uint8_t lowByte1, uint8_t highByte2, uint8_t lowByte2)
 {
     if (highByte1 == 0xff && lowByte1 == 0xff && highByte2 == 0xff && lowByte2 == 0xff)
     {
@@ -69,7 +69,7 @@ static uint32_t combine_4Bytes_unsingned(uint8_t highByte1, uint8_t lowByte1, ui
     return ((uint32_t)highByte1 << 24) | (lowByte1 << 16) | (highByte2 << 8) | lowByte2;
 }
 
-static int32_t combine_4Bytes_singned(uint8_t highByte1, uint8_t lowByte1, uint8_t highByte2, uint8_t lowByte2)
+static int32_t combine_4Bytes_signed(uint8_t highByte1, uint8_t lowByte1, uint8_t highByte2, uint8_t lowByte2)
 {
     int32_t result = ((int32_t)highByte1 << 24) | lowByte1 << 16 | highByte2 << 8 | lowByte2;
     if (highByte1 == 0x7f && lowByte1 == 0xff && highByte2 == 0xff && lowByte2 == 0xff)
@@ -79,7 +79,7 @@ static int32_t combine_4Bytes_singned(uint8_t highByte1, uint8_t lowByte1, uint8
     return result;
 }
 
-static uint64_t combine_8Bytes_unsingned(uint8_t highByte1, uint8_t lowByte1, uint8_t highByte2, uint8_t lowByte2,
+static uint64_t combine_8Bytes_unsigned(uint8_t highByte1, uint8_t lowByte1, uint8_t highByte2, uint8_t lowByte2,
                                          uint8_t highByte3, uint8_t lowByte3, uint8_t highByte4, uint8_t lowByte4)
 {
     if (highByte1 == 0xff && lowByte1 == 0xff && highByte2 == 0xff && lowByte2 == 0xff &&
@@ -90,6 +90,20 @@ static uint64_t combine_8Bytes_unsingned(uint8_t highByte1, uint8_t lowByte1, ui
     return ((uint64_t)highByte1 << 56) | ((uint64_t)lowByte1 << 48) | ((uint64_t)highByte2 << 40) | ((uint64_t)lowByte2 << 32) |
            ((uint64_t)highByte3 << 24) | ((uint64_t)lowByte3 << 16) | ((uint64_t)highByte4 << 8) | lowByte4;
 }
+
+static int64_t combine_8Bytes_signed(uint8_t highByte1, uint8_t lowByte1, uint8_t highByte2, uint8_t lowByte2,
+                                      uint8_t highByte3, uint8_t lowByte3, uint8_t highByte4, uint8_t lowByte4)
+{
+    int64_t result = ((int64_t)highByte1 << 56) | ((int64_t)lowByte1 << 48) | ((int64_t)highByte2 << 40) | ((int64_t)lowByte2 << 32) |
+                     ((int64_t)highByte3 << 24) | ((int64_t)lowByte3 << 16) | ((int64_t)highByte4 << 8) | (int64_t)lowByte4;
+    if (highByte1 == 0x7f && lowByte1 == 0xff && highByte2 == 0xff && lowByte2 == 0xff &&
+        highByte3 == 0xff && lowByte3 == 0xff && highByte4 == 0xff && lowByte4 == 0xff)
+    {
+        return 0;
+    }
+    return result;
+}
+
 
 static uint16_t MODBUS_CRC16(uint8_t *buf, uint16_t len)
 {
@@ -141,35 +155,35 @@ static uint16_t MODBUS_CRC16(uint8_t *buf, uint16_t len)
 
 static void read_data_holding_reg_ThreePhase_PowerFactors(uint8_t *dtmp_buf)
 {
-    data_3pha.voltage3pha = combine_4Bytes_unsingned(dtmp_buf[3], dtmp_buf[4], dtmp_buf[5], dtmp_buf[6]);
-    data_3pha.voltageL1 = combine_4Bytes_unsingned(dtmp_buf[7], dtmp_buf[8], dtmp_buf[9], dtmp_buf[10]);
-    data_3pha.voltageL2 = combine_4Bytes_unsingned(dtmp_buf[11], dtmp_buf[12], dtmp_buf[13], dtmp_buf[14]);
-    data_3pha.voltageL3 = combine_4Bytes_unsingned(dtmp_buf[15], dtmp_buf[16], dtmp_buf[17], dtmp_buf[18]);
+    data_3pha.voltage3pha = combine_4Bytes_unsigned(dtmp_buf[3], dtmp_buf[4], dtmp_buf[5], dtmp_buf[6]);
+    data_3pha.voltageL1 = combine_4Bytes_unsigned(dtmp_buf[7], dtmp_buf[8], dtmp_buf[9], dtmp_buf[10]);
+    data_3pha.voltageL2 = combine_4Bytes_unsigned(dtmp_buf[11], dtmp_buf[12], dtmp_buf[13], dtmp_buf[14]);
+    data_3pha.voltageL3 = combine_4Bytes_unsigned(dtmp_buf[15], dtmp_buf[16], dtmp_buf[17], dtmp_buf[18]);
 
-    data_3pha.voltageL1L2 = combine_4Bytes_unsingned(dtmp_buf[19], dtmp_buf[20], dtmp_buf[21], dtmp_buf[22]);
-    data_3pha.voltageL3L2 = combine_4Bytes_unsingned(dtmp_buf[23], dtmp_buf[24], dtmp_buf[25], dtmp_buf[26]);
-    data_3pha.voltageL1L3 = combine_4Bytes_unsingned(dtmp_buf[27], dtmp_buf[28], dtmp_buf[29], dtmp_buf[30]);
+    data_3pha.voltageL1L2 = combine_4Bytes_unsigned(dtmp_buf[19], dtmp_buf[20], dtmp_buf[21], dtmp_buf[22]);
+    data_3pha.voltageL3L2 = combine_4Bytes_unsigned(dtmp_buf[23], dtmp_buf[24], dtmp_buf[25], dtmp_buf[26]);
+    data_3pha.voltageL1L3 = combine_4Bytes_unsigned(dtmp_buf[27], dtmp_buf[28], dtmp_buf[29], dtmp_buf[30]);
 
-    data_3pha.current3pha = combine_4Bytes_unsingned(dtmp_buf[31], dtmp_buf[32], dtmp_buf[33], dtmp_buf[34]);
-    data_3pha.currentL1 = combine_4Bytes_unsingned(dtmp_buf[35], dtmp_buf[36], dtmp_buf[37], dtmp_buf[38]);
-    data_3pha.currentL2 = combine_4Bytes_unsingned(dtmp_buf[39], dtmp_buf[40], dtmp_buf[41], dtmp_buf[42]);
-    data_3pha.currentL3 = combine_4Bytes_unsingned(dtmp_buf[43], dtmp_buf[44], dtmp_buf[45], dtmp_buf[46]);
-    data_3pha.currentN = combine_4Bytes_unsingned(dtmp_buf[47], dtmp_buf[48], dtmp_buf[49], dtmp_buf[50]);
+    data_3pha.current3pha = combine_4Bytes_unsigned(dtmp_buf[31], dtmp_buf[32], dtmp_buf[33], dtmp_buf[34]);
+    data_3pha.currentL1 = combine_4Bytes_unsigned(dtmp_buf[35], dtmp_buf[36], dtmp_buf[37], dtmp_buf[38]);
+    data_3pha.currentL2 = combine_4Bytes_unsigned(dtmp_buf[39], dtmp_buf[40], dtmp_buf[41], dtmp_buf[42]);
+    data_3pha.currentL3 = combine_4Bytes_unsigned(dtmp_buf[43], dtmp_buf[44], dtmp_buf[45], dtmp_buf[46]);
+    data_3pha.currentN = combine_4Bytes_unsigned(dtmp_buf[47], dtmp_buf[48], dtmp_buf[49], dtmp_buf[50]);
 
-    data_3pha.actpower3pha = combine_4Bytes_singned(dtmp_buf[55], dtmp_buf[56], dtmp_buf[57], dtmp_buf[58]);
-    data_3pha.actpowerL1 = combine_4Bytes_singned(dtmp_buf[59], dtmp_buf[60], dtmp_buf[61], dtmp_buf[62]);
-    data_3pha.actpowerL2 = combine_4Bytes_singned(dtmp_buf[63], dtmp_buf[64], dtmp_buf[65], dtmp_buf[66]);
-    data_3pha.actpowerL3 = combine_4Bytes_singned(dtmp_buf[67], dtmp_buf[68], dtmp_buf[69], dtmp_buf[70]);
+    data_3pha.actpower3pha = combine_4Bytes_signed(dtmp_buf[55], dtmp_buf[56], dtmp_buf[57], dtmp_buf[58]);
+    data_3pha.actpowerL1 = combine_4Bytes_signed(dtmp_buf[59], dtmp_buf[60], dtmp_buf[61], dtmp_buf[62]);
+    data_3pha.actpowerL2 = combine_4Bytes_signed(dtmp_buf[63], dtmp_buf[64], dtmp_buf[65], dtmp_buf[66]);
+    data_3pha.actpowerL3 = combine_4Bytes_signed(dtmp_buf[67], dtmp_buf[68], dtmp_buf[69], dtmp_buf[70]);
 
-    data_3pha.ractpower3pha = combine_4Bytes_singned(dtmp_buf[71], dtmp_buf[72], dtmp_buf[73], dtmp_buf[74]);
-    data_3pha.ractpowerL1 = combine_4Bytes_singned(dtmp_buf[75], dtmp_buf[76], dtmp_buf[77], dtmp_buf[78]);
-    data_3pha.ractpowerL2 = combine_4Bytes_singned(dtmp_buf[79], dtmp_buf[80], dtmp_buf[81], dtmp_buf[82]);
-    data_3pha.ractpowerL3 = combine_4Bytes_singned(dtmp_buf[83], dtmp_buf[84], dtmp_buf[85], dtmp_buf[86]);
+    data_3pha.ractpower3pha = combine_4Bytes_signed(dtmp_buf[71], dtmp_buf[72], dtmp_buf[73], dtmp_buf[74]);
+    data_3pha.ractpowerL1 = combine_4Bytes_signed(dtmp_buf[75], dtmp_buf[76], dtmp_buf[77], dtmp_buf[78]);
+    data_3pha.ractpowerL2 = combine_4Bytes_signed(dtmp_buf[79], dtmp_buf[80], dtmp_buf[81], dtmp_buf[82]);
+    data_3pha.ractpowerL3 = combine_4Bytes_signed(dtmp_buf[83], dtmp_buf[84], dtmp_buf[85], dtmp_buf[86]);
 
-    data_3pha.aprtpower3pha = combine_4Bytes_singned(dtmp_buf[87], dtmp_buf[88], dtmp_buf[89], dtmp_buf[90]);
-    data_3pha.aprtpowerL1 = combine_4Bytes_singned(dtmp_buf[91], dtmp_buf[92], dtmp_buf[93], dtmp_buf[94]);
-    data_3pha.aprtpowerL2 = combine_4Bytes_singned(dtmp_buf[95], dtmp_buf[96], dtmp_buf[97], dtmp_buf[98]);
-    data_3pha.aprtpowerL3 = combine_4Bytes_singned(dtmp_buf[99], dtmp_buf[100], dtmp_buf[101], dtmp_buf[102]);
+    data_3pha.aprtpower3pha = combine_4Bytes_signed(dtmp_buf[87], dtmp_buf[88], dtmp_buf[89], dtmp_buf[90]);
+    data_3pha.aprtpowerL1 = combine_4Bytes_signed(dtmp_buf[91], dtmp_buf[92], dtmp_buf[93], dtmp_buf[94]);
+    data_3pha.aprtpowerL2 = combine_4Bytes_signed(dtmp_buf[95], dtmp_buf[96], dtmp_buf[97], dtmp_buf[98]);
+    data_3pha.aprtpowerL3 = combine_4Bytes_signed(dtmp_buf[99], dtmp_buf[100], dtmp_buf[101], dtmp_buf[102]);
 
     data_3pha.Frequency = combine_2Bytes_unsigned(dtmp_buf[103], dtmp_buf[104]);
 
@@ -181,11 +195,28 @@ static void read_data_holding_reg_ThreePhase_PowerFactors(uint8_t *dtmp_buf)
 
 static void read_data_holding_reg_ActiveEnergy_CO2(uint8_t *dtmp_buf)
 {
-    data_3pha.actenergy = combine_8Bytes_unsingned(dtmp_buf[3], dtmp_buf[4], dtmp_buf[5], dtmp_buf[6], dtmp_buf[7], dtmp_buf[8], dtmp_buf[9], dtmp_buf[10]);
-    data_3pha.ractenergy = combine_8Bytes_unsingned(dtmp_buf[27], dtmp_buf[28], dtmp_buf[29], dtmp_buf[30], dtmp_buf[31], dtmp_buf[32], dtmp_buf[33], dtmp_buf[34]);
-    data_3pha.aprtenergy = combine_8Bytes_unsingned(dtmp_buf[51], dtmp_buf[52], dtmp_buf[53], dtmp_buf[54], dtmp_buf[55], dtmp_buf[56], dtmp_buf[57], dtmp_buf[58]);
-    data_3pha.CO2factor = combine_8Bytes_unsingned(dtmp_buf[75], dtmp_buf[76], dtmp_buf[77], dtmp_buf[78], dtmp_buf[79], dtmp_buf[80], dtmp_buf[81], dtmp_buf[82]);
-    data_3pha.CURfactor = combine_8Bytes_unsingned(dtmp_buf[107], dtmp_buf[108], dtmp_buf[109], dtmp_buf[110], dtmp_buf[111], dtmp_buf[112], dtmp_buf[113], dtmp_buf[114]);
+    data_3pha.actenergyImport = combine_8Bytes_unsigned(dtmp_buf[3], dtmp_buf[4], dtmp_buf[5], dtmp_buf[6], dtmp_buf[7], dtmp_buf[8], dtmp_buf[9], dtmp_buf[10]);
+    data_3pha.actenergyExport = combine_8Bytes_unsigned(dtmp_buf[11], dtmp_buf[12], dtmp_buf[13], dtmp_buf[14], dtmp_buf[15], dtmp_buf[16], dtmp_buf[17], dtmp_buf[18]);
+    data_3pha.actenergyNet = combine_8Bytes_signed(dtmp_buf[19], dtmp_buf[20], dtmp_buf[21], dtmp_buf[22], dtmp_buf[23], dtmp_buf[24], dtmp_buf[25], dtmp_buf[26]);
+
+    data_3pha.ractenergyImport = combine_8Bytes_unsigned(dtmp_buf[27], dtmp_buf[28], dtmp_buf[29], dtmp_buf[30], dtmp_buf[31], dtmp_buf[32], dtmp_buf[33], dtmp_buf[34]);
+    data_3pha.ractenergyExport = combine_8Bytes_unsigned(dtmp_buf[35], dtmp_buf[36], dtmp_buf[37], dtmp_buf[38], dtmp_buf[39], dtmp_buf[40], dtmp_buf[41], dtmp_buf[42]);
+    data_3pha.ractenergyNet = combine_8Bytes_signed(dtmp_buf[43], dtmp_buf[44], dtmp_buf[45], dtmp_buf[46], dtmp_buf[47], dtmp_buf[48], dtmp_buf[49], dtmp_buf[50]);
+
+    data_3pha.aprtenergyImport = combine_8Bytes_unsigned(dtmp_buf[51], dtmp_buf[52], dtmp_buf[53], dtmp_buf[54], dtmp_buf[55], dtmp_buf[56], dtmp_buf[57], dtmp_buf[58]);
+    data_3pha.aprtenergyExport = combine_8Bytes_unsigned(dtmp_buf[59], dtmp_buf[60], dtmp_buf[61], dtmp_buf[62], dtmp_buf[53], dtmp_buf[64], dtmp_buf[65], dtmp_buf[66]);
+    data_3pha.aprtenergyNet = combine_8Bytes_signed(dtmp_buf[67], dtmp_buf[68], dtmp_buf[69], dtmp_buf[70], dtmp_buf[71], dtmp_buf[72], dtmp_buf[73], dtmp_buf[74]);
+
+    data_3pha.CO2factor = combine_8Bytes_unsigned(dtmp_buf[75], dtmp_buf[76], dtmp_buf[77], dtmp_buf[78], dtmp_buf[79], dtmp_buf[80], dtmp_buf[81], dtmp_buf[82]);
+    data_3pha.CURfactor = combine_8Bytes_unsigned(dtmp_buf[107], dtmp_buf[108], dtmp_buf[109], dtmp_buf[110], dtmp_buf[111], dtmp_buf[112], dtmp_buf[113], dtmp_buf[114]);
+}
+
+char mac_str[13];
+static void get_thing_token(void)
+{
+    uint8_t mac[6];
+    esp_efuse_mac_get_default(mac);
+    snprintf(mac_str, sizeof(mac_str), "%02x%02x%02x%02x%02x%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
 /****************************************************************************/
@@ -230,10 +261,13 @@ void rs485_init()
 
 void TX(const int port, const char *str, uint8_t length)
 {
-    // printf("strlen: %d, str_tx:", strlen(str));
-    //  for (uint8_t i = 0; i < 8; i++)
-    //      printf("%02x", str[i]);
-    //  printf("\n");
+    printf("strlen: %d, str_tx:", strlen(str));
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        printf("%02x", str[i]);
+    }
+    printf("\n");
+
     if (uart_write_bytes(port, str, length) != length)
     {
         ESP_LOGE(TAG, "Send data critical failure.");
@@ -258,13 +292,25 @@ void RX_task(void *pvParameters)
                 if ((dtmp[1] == 0x03) && (dtmp[2] == 0x88))
                 {
                     check_data_flag = 1;
-                    // ESP_LOGI(TAG, "Byte count: %d", dtmp[2]);
+                    printf("str RX 1: ");
+                    for (int i = 0; i < len; i++)
+                    {
+                        printf("%02X ", dtmp[i]);
+                    }
+                    printf("\n");
+                    ESP_LOGI(TAG, "Byte count: %d", dtmp[2]);
                     read_data_holding_reg_ThreePhase_PowerFactors(dtmp);
                 }
                 else if ((dtmp[1] == 0x03) && (dtmp[2] == 0x70))
                 {
                     check_data_flag = 1;
-                    // ESP_LOGI(TAG, "Byte count: %d", dtmp[2]);
+                    printf("str RX 2: ");
+                    for (int i = 0; i < len; i++)
+                    {
+                        printf("%02X ", dtmp[i]);
+                    }
+                    printf("\n");
+                    ESP_LOGI(TAG, "Byte count: %d", dtmp[2]);
                     read_data_holding_reg_ActiveEnergy_CO2(dtmp);
                 }
                 uart_flush(UART_PORT_2);
@@ -317,11 +363,6 @@ char *read_holding_registers(uint8_t slave_addr, uint16_t reg_addr, uint16_t num
 uint8_t trans_code = 0;
 char *pack_json_3pha_data(void)
 {
-    char mac_str[13];
-    uint8_t mac[6];
-    esp_efuse_mac_get_default(mac);
-    snprintf(mac_str, sizeof(mac_str), "%02x%02x%02x%02x%02x%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
     cJSON *json_3pha_data = cJSON_CreateObject();
     cJSON_AddStringToObject(json_3pha_data, "thing_token", mac_str);
     cJSON_AddStringToObject(json_3pha_data, "cmd_name", "Bee.Nag_data");
@@ -365,9 +406,18 @@ char *pack_json_3pha_data(void)
     cJSON_AddNumberToObject(json_values, "PowerfactL2", data_3pha.PowerfactL2);
     cJSON_AddNumberToObject(json_values, "PowerfactL3", data_3pha.PowerfactL3);
 
-    cJSON_AddNumberToObject(json_values, "actenergy", data_3pha.actenergy);
-    cJSON_AddNumberToObject(json_values, "ractenergy", data_3pha.ractenergy);
-    cJSON_AddNumberToObject(json_values, "aprtenergy", data_3pha.aprtenergy);
+    cJSON_AddNumberToObject(json_values, "actenergyImport", data_3pha.actenergyImport);
+    cJSON_AddNumberToObject(json_values, "actenergyExport", data_3pha.actenergyExport);
+    cJSON_AddNumberToObject(json_values, "actenergyNet", data_3pha.actenergyNet);
+
+    cJSON_AddNumberToObject(json_values, "ractenergyImport", data_3pha.ractenergyImport);
+    cJSON_AddNumberToObject(json_values, "ractenergyExport", data_3pha.ractenergyExport);
+    cJSON_AddNumberToObject(json_values, "ractenergyNet", data_3pha.ractenergyNet);
+
+    cJSON_AddNumberToObject(json_values, "aprtenergyImport", data_3pha.aprtenergyImport);
+    cJSON_AddNumberToObject(json_values, "aprtenergyExport", data_3pha.aprtenergyExport);
+    cJSON_AddNumberToObject(json_values, "aprtenergyNet", data_3pha.aprtenergyNet);
+
     cJSON_AddNumberToObject(json_values, "CO2factor", data_3pha.CO2factor);
     cJSON_AddNumberToObject(json_values, "CURfactor", data_3pha.CURfactor);
 
@@ -434,6 +484,7 @@ static void TX_task(void *pvParameters)
 
 void rs485_start()
 {
+    get_thing_token();
     xTaskCreate(RX_task, "RX_task", RX_TASK_STACK_SIZE * 2, NULL, 31, NULL);
     xTaskCreate(TX_task, "TX_task", 4096 * 2, NULL, 30, NULL);
 }

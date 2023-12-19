@@ -244,6 +244,17 @@ static void check_module_sim()
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CFUN=1\r\n");
     uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
     vTaskDelay(pdMS_TO_TICKS(5000));
+
+    snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+UPSV?\r\n");
+    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
+    snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CPIN?\r\n");
+    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
+    snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CCLK?\r\n");
+    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
+    snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CGDCONT?\r\n");
+    uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
+    vTaskDelay(pdMS_TO_TICKS(5000));
+
     // Check registration
     snprintf(command_AT, BEE_LENGTH_AT_COMMAND, "AT+CEREG?\r\n");
     uart_flush_input(EX_UART_NUM);
@@ -434,8 +445,6 @@ static void mqtt_vSubscribe_command_server_task()
                     // Read message AT command from broker
                     uart_read_bytes(EX_UART_NUM, dtmp, uart_event.size * 5, (TickType_t)50);
                     ESP_LOGI(TAG,"dtmp: %s", dtmp);
-                    ESP_LOGI(TAG,"dtmp len: %d", strlen(dtmp));
-
                     if (strstr(dtmp, "+UUMQTTC: 6") != NULL)
                     {
                         uart_write_bytes(EX_UART_NUM, command_AT, strlen(command_AT));
