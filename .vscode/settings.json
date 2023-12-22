@@ -40,6 +40,10 @@
     "regex": "c",
     "tuple": "c",
     "variant": "c",
-    "cstring": "c"
+    "cstring": "c",
+    "string": "c",
+    "unordered_map": "c",
+    "initializer_list": "c",
+    "stdint.h": "c"
   }
 }

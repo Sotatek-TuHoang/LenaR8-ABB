@@ -43,8 +43,6 @@
 
 #define BEE_TIME_TRANSMIT_DATA_RS485 2000
 
-#define gCO2e_per_Kwh 386
-
 #define RESET_LOGS \
     (uint8_t[]) { 0x8f, 0x57 }
 #define RESET_HISTORICAL_FUNCTIONALITY \
@@ -97,20 +95,13 @@ typedef struct
     int16_t PowerfactL2;
     int16_t PowerfactL3;
 
-    uint64_t actenergyImport;
-    uint64_t actenergyExport;
-    int64_t actenergyNet;
-
-    uint64_t ractenergyImport;
-    uint64_t ractenergyExport;
-    int64_t ractenergyNet;
-
-    uint64_t aprtenergyImport;
-    uint64_t aprtenergyExport;
-    int64_t aprtenergyNet;
+    uint64_t actenergy;
+    uint64_t ractenergy;
+    uint64_t aprtenergy;
 
     uint64_t CO2factor;
     uint64_t CURfactor;
+    
 } data_3pha_t;
 
 /****************************************************************************/

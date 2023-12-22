@@ -21,6 +21,7 @@
 #include "bee_Led.h"
 #include "bee_Lena_r8.h"
 #include "bee_ota.h"
+#include "bee_nvs.h"
 
 QueueHandle_t queue_message_response; // queue for task subscribe
 TaskHandle_t mqtt_vPublish_task_handle = NULL;
@@ -401,13 +402,28 @@ static void mqtt_vParse_json(char *mqtt_str)
                 reset_data(Slave_addr, RESET_MAX_MIN_AVR);
             }
         }
+        else if ((strcmp(Thing_token, mac_address) == 0) && (strcmp(Cmd_name, "Bee.Nag_config") == 0) && (strcmp(Object_type, "Bee.Nag_vrf") == 0))
+        {
+            char *type_config = cJSON_GetObjectItemCaseSensitive(root, "type_config")->valuestring;
+            int value = cJSON_GetObjectItemCaseSensitive(root, "value")->valueint;
+
+            if ((strcmp(type_config, "CO2_ratio") == 0))
+            {
+                CO2_ratio = value;
+                save_config_to_nvs("CO2_ratio", value);
+            }
+            else if ((strcmp(type_config, "CUR_ratio") == 0))
+            {
+                CUR_ratio = value;
+                save_config_to_nvs("CUR_ratio", value);
+            }
+        }
         else if ((strcmp(Thing_token, mac_address) == 0) && (strcmp(Cmd_name, "Bee.Nag_ota") == 0) && (strcmp(Object_type, "Bee.Nag_vrf") == 0))
         {
             double get_version = cJSON_GetObjectItemCaseSensitive(root, "version")->valuedouble;
-            printf("version: %f\n", get_version);
+            ESP_LOGI(TAG, "version: %f\n", get_version);
             if(get_version > VERSION)
             {
-                printf("start ota\n");
                 vTaskDelete(mqtt_vPublish_task_handle);
                 char *ssid_ap = cJSON_GetObjectItemCaseSensitive(root, "ssid_ap")->valuestring;
                 char *pass_ap = cJSON_GetObjectItemCaseSensitive(root, "pass_ap")->valuestring;

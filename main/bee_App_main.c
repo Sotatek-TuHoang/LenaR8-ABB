@@ -8,15 +8,15 @@
 #include "bee_rs485.h"
 #include "bee_Lena_r8.h"
 #include "bee_Led.h"
+#include "bee_nvs.h"
 
 void app_main()
 {
     led_vCreate_status();
-
     uart_vCreate();
+    nvs_flash_func_init();
     rs485_init();
     rs485_start();
-
     mqtt_vLena_r8_start();
 }
 
