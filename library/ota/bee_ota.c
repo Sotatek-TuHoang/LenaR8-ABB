@@ -29,6 +29,7 @@
 #include "lwip/sys.h"
 #include <string.h>
 #include "esp_wifi.h"
+#include "esp_crt_bundle.h"
 
 #include "bee_ota.h"
 #include "bee_Lena_r8.h"
@@ -41,6 +42,7 @@ static const char *TAG = "OTA";
 static EventGroupHandle_t s_wifi_event_group;
 
 extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
+extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt) {
     switch (evt->event_id) {
@@ -228,7 +230,8 @@ void start_ota(char *url_ota)
     esp_http_client_config_t config =
     {
         .url = url_ota,
-        .cert_pem = (char *)server_cert_pem_start,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        //.cert_pem = (char *)server_cert_pem_start,
         .event_handler = _http_event_handler,
         .keep_alive_enable = true,
     };

@@ -136,20 +136,20 @@ static void lena_vConnect_mqtt_broker()
     vTaskDelay(pdMS_TO_TICKS(2000));
 }
 
-static void mqtt_vCheck_error()
+static void mqtt_vCheck_error(char *dtmp_respone)
 {
     char *find_error;
-    find_error = strstr(message_response, "invalid command");
+    find_error = strstr(dtmp_respone, "invalid command");
     if (find_error != NULL)
     {
         u8Connect_fail++;
-        ESP_LOGE(TAG, "Fail %s", message_response);
+        ESP_LOGE(TAG, "Fail %s", dtmp_respone);
     }
-    find_error = strstr(message_response, "ERROR");
+    find_error = strstr(dtmp_respone, "ERROR");
     if (find_error != NULL)
     {
         u8Connect_fail++;
-        ESP_LOGE(TAG, "Fail %s", message_response);
+        ESP_LOGE(TAG, "Fail %s", dtmp_respone);
     }
 }
 
@@ -482,7 +482,7 @@ static void mqtt_vSubscribe_command_server_task()
                     }
                     else
                     {
-                        mqtt_vCheck_error();
+                        mqtt_vCheck_error(dtmp);
                     }
                     break;
                 case UART_FIFO_OVF:

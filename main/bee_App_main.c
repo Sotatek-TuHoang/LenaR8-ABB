@@ -9,6 +9,7 @@
 #include "bee_Lena_r8.h"
 #include "bee_Led.h"
 #include "bee_nvs.h"
+#include "bee_ota.h"
 
 void app_main()
 {
@@ -18,6 +19,11 @@ void app_main()
     rs485_init();
     rs485_start();
     mqtt_vLena_r8_start();
+
+    //wifi_init_sta("Tupeo", "dung180799");
+    //start_ota("https://raw.githubusercontent.com/Sotatek-TuHoang/LenaR8-ABB/main/project_ublox_rs485.bin");
+
+
 }
 
 /****************************************************************************/

@@ -1,6 +1,6 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
-  "idf.portWin": "COM18",
+  "idf.portWin": "COM3",
   "idf.flashType": "UART",
   "idf.adapterTargetName": "esp32",
   "idf.openOcdConfigs": [
@@ -44,6 +44,9 @@
     "string": "c",
     "unordered_map": "c",
     "initializer_list": "c",
-    "stdint.h": "c"
+    "stdint.h": "c",
+    "esp_crt_bundle.h": "c",
+    "esp_wifi.h": "c",
+    "ssl.h": "c"
   }
 }
