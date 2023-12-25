@@ -147,6 +147,7 @@ void nvs_init_ota()
 
 void wifi_init_sta(const char* ssid, const char* pass)
 {
+    
     s_wifi_event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
@@ -213,13 +214,18 @@ void wifi_init_sta(const char* ssid, const char* pass)
         ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
                  ssid, pass);
         ota_status_flag = CONNECT_AP_FAIL;
-        lena_vPublish_ota_status();
-        esp_restart();
     }
     else
     {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
+}
+
+void deinit_wifi()
+{
+    ESP_ERROR_CHECK(esp_wifi_stop());
+    ESP_ERROR_CHECK(esp_wifi_deinit());
+    esp_event_loop_delete_default();
 }
 
 void start_ota(char *url_ota)

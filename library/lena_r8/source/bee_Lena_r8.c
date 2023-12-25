@@ -424,21 +424,29 @@ static void mqtt_vParse_json(char *mqtt_str)
             ESP_LOGI(TAG, "version: %f\n", get_version);
             if(get_version > VERSION)
             {
-                vTaskDelete(mqtt_vPublish_task_handle);
                 char *ssid_ap = cJSON_GetObjectItemCaseSensitive(root, "ssid_ap")->valuestring;
                 char *pass_ap = cJSON_GetObjectItemCaseSensitive(root, "pass_ap")->valuestring;
                 char *url_ota = cJSON_GetObjectItemCaseSensitive(root, "url_ota")->valuestring;
 
                 nvs_init_ota();
                 wifi_init_sta(ssid_ap, pass_ap);
-                start_ota(url_ota);
+                if (ota_status_flag != CONNECT_AP_FAIL)
+                {
+                    start_ota(url_ota);
+                    lena_vPublish_ota_status();
+                    esp_restart();
+                }
+                else
+                {
+                    lena_vPublish_ota_status();
+                    esp_restart();
+                }
             }
             else
             {
                 ota_status_flag = LASTEST_VERSION;
+                lena_vPublish_ota_status();
             }
-            lena_vPublish_ota_status();
-            esp_restart();
         }
         cJSON_Delete(root);
     }
@@ -459,7 +467,14 @@ static void mqtt_vSubscribe_command_server_task()
             {
                 case UART_DATA:
                     // Read message AT command from broker
-                    uart_read_bytes(EX_UART_NUM, dtmp, uart_event.size * 5, (TickType_t)50);
+                    if (uart_event.size < 120)
+                    {
+                        uart_read_bytes(EX_UART_NUM, dtmp, uart_event.size, (TickType_t)50);
+                    }
+                    else
+                    {
+                        uart_read_bytes(EX_UART_NUM, dtmp, uart_event.size * 8, (TickType_t)50);
+                    }
                     ESP_LOGI(TAG,"dtmp: %s", dtmp);
                     if (strstr(dtmp, "+UUMQTTC: 6") != NULL)
                     {
