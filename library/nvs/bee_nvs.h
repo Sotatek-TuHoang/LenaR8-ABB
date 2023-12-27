@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define NVS_CONFIG              "config"
+#define NVS_RATIO_CONFIG        "ratio_config"
 #define NVS_CO2_RATIO           "co2_ratio"
 #define NVS_CUR_RATIO           "CUR_ratio"
 

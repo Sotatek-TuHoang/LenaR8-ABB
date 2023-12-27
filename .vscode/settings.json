@@ -47,6 +47,9 @@
     "stdint.h": "c",
     "esp_crt_bundle.h": "c",
     "esp_wifi.h": "c",
-    "ssl.h": "c"
+    "ssl.h": "c",
+    "charconv": "c",
+    "ratio": "c",
+    "utility": "c"
   }
 }

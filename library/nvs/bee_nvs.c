@@ -23,6 +23,7 @@
 static const char *TAG = "NVS";
 uint16_t CO2_ratio = 1;
 uint16_t CUR_ratio = 1;
+uint16_t pub_data_rate = 10;
 
 /****************************************************************************/
 /***        Exported functions                                            ***/
@@ -43,7 +44,7 @@ void nvs_flash_func_init()
 void save_config_to_nvs(char *type_config, uint16_t value)
 {
     nvs_handle_t nvs_config_handle;
-    esp_err_t err = nvs_open(NVS_CONFIG, NVS_READWRITE, &nvs_config_handle);
+    esp_err_t err = nvs_open(NVS_RATIO_CONFIG, NVS_READWRITE, &nvs_config_handle);
 
     if (err == ESP_OK)
     {
@@ -58,7 +59,7 @@ void save_config_to_nvs(char *type_config, uint16_t value)
             
         if (err != ESP_OK)
         {
-            ESP_LOGE(TAG, "Error saving wifi credentials to NVS! (%s)\n", esp_err_to_name(err));
+            ESP_LOGE(TAG, "Error saving  to NVS! (%s)\n", esp_err_to_name(err));
         }
         nvs_close(nvs_config_handle);
     }
@@ -71,7 +72,7 @@ void save_config_to_nvs(char *type_config, uint16_t value)
 void load_config_from_nvs()
 {
     nvs_handle_t nvs_config_handle;
-    esp_err_t err = nvs_open(NVS_CONFIG, NVS_READONLY, &nvs_config_handle);
+    esp_err_t err = nvs_open(NVS_RATIO_CONFIG, NVS_READONLY, &nvs_config_handle);
 
     if (err == ESP_OK)
     {
@@ -84,11 +85,11 @@ void load_config_from_nvs()
         }
         else if (err == ESP_ERR_NVS_NOT_FOUND)
         {
-            ESP_LOGE(TAG, "Wifi cred not found in NVS\n");
+            ESP_LOGE(TAG, "Not found in NVS\n");
         }
         else
         {
-            ESP_LOGE(TAG, "Error reading wifi credentials from NVS! (%s)\n", esp_err_to_name(err));
+            ESP_LOGE(TAG, "Error reading  from NVS! (%s)\n", esp_err_to_name(err));
         }
         nvs_close(nvs_config_handle);
     }

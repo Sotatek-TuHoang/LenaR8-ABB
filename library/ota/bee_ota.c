@@ -93,6 +93,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         else
         {
             xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+            ota_status_flag = CONNECT_AP_FAIL;
         }
         ESP_LOGI(TAG,"connect to the AP fail");
 
@@ -147,7 +148,6 @@ void nvs_init_ota()
 
 void wifi_init_sta(const char* ssid, const char* pass)
 {
-    
     s_wifi_event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
@@ -213,19 +213,11 @@ void wifi_init_sta(const char* ssid, const char* pass)
     {
         ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
                  ssid, pass);
-        ota_status_flag = CONNECT_AP_FAIL;
     }
     else
     {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
-}
-
-void deinit_wifi()
-{
-    ESP_ERROR_CHECK(esp_wifi_stop());
-    ESP_ERROR_CHECK(esp_wifi_deinit());
-    esp_event_loop_delete_default();
 }
 
 void start_ota(char *url_ota)

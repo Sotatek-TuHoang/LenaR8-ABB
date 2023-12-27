@@ -20,10 +20,8 @@ void app_main()
     rs485_start();
     mqtt_vLena_r8_start();
 
-    //wifi_init_sta("Tupeo", "dung180799");
+    //wifi_init_sta("Tupeo", "tu123456");
     //start_ota("https://raw.githubusercontent.com/Sotatek-TuHoang/LenaR8-ABB/main/project_ublox_rs485.bin");
-
-
 }
 
 /****************************************************************************/
